@@ -2,7 +2,13 @@
 const { toISO } = require('./dates');
 
 const id = (v) => (v && v._id ? String(v._id) : v ? String(v) : null);
-
+const PUBLIC_URL = () => (process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 5000}`).replace(/\/$/, '');
+const absoluteUrl = (u) => {
+  if (typeof u !== 'string') return u;
+  if (u.startsWith('/')) return PUBLIC_URL() + u;
+  // photos saved from the admin panel while running locally: point them at the public server
+  return u.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(?=\/uploads\/)/, PUBLIC_URL());
+};
 exports.userDTO = (u) => ({
   id: String(u._id),
   name: u.name,
@@ -36,7 +42,7 @@ exports.carDTO = (c) => ({
   luggage: c.luggage,
   description: c.description,
   features: c.features,
-  images: c.images,
+  images: (c.images || []).map(absoluteUrl),
   available: c.available,
 });
 
